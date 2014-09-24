@@ -38,6 +38,20 @@ class Crawler:
         fp = urllib.urlopen(url)
         return fp.read()
 
+    def down_img(self, imgs):
+        # download img
+        cnt = 0
+        for each in imgs:
+            print 'Downloading image: '+each
+            cnt += 1
+            i = each.rfind('/')
+            img_name = each[(i+1):]
+            full_path = self.outdir+'/'+img_name
+            print 'Saving to: ' + full_path
+            urllib.urlretrieve(each, full_path)
+            print "%d mm_pic downloaded." % cnt
+        sys.exit()
+
     def real_iron(self, urls):
         queue = deque()
         queue.append(urls)
@@ -48,7 +62,7 @@ class Crawler:
             l = queue.popleft()
             visited |= {l}
 
-            print "Get Page:"+l
+            print "Get Page: "+l
             data = self.html_get(l)
             # get the whole
             linkre = re.compile(self.re_sub)
@@ -58,7 +72,7 @@ class Crawler:
                 if page not in visited:
                     # TODO: reduce html_get
                     if 'html' in page:
-                        print "Get Html:"+page
+                        print "Get Html: "+page
                         page_data = self.html_get(page)
                         # capture the img
                         pattern = re.compile(self.re_pic)
@@ -67,19 +81,10 @@ class Crawler:
                             imgs |= {pic}
                             # reach the limit
                             if len(imgs) == self.limit and self.limit != 0:
-                                # download img
-                                cnt = 0
-                                for each in imgs:
-                                    print 'Downloading image: '+each
-                                    cnt += 1
-                                    i = each.rfind('/')
-                                    img_name = each[(i+1):]
-                                    full_path = self.outdir+'/'+img_name
-                                    print 'Saving to: ' + full_path
-                                    urllib.urlretrieve(each, full_path)
-                                    print "%d mm_pic downloaded." % cnt
-                                sys.exit()
+                                self.down_img(imgs)
                     queue.append(page)
+        # ulimit
+        self.down_img(imgs)
 
 
 def main():
